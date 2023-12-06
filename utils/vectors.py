@@ -9,7 +9,7 @@ TAU = math.tau
     
 def get_direction(
         angle: float, 
-        degrees: bool=False, 
+        deg: bool=False, 
         error: float=0, 
         offset: float=0, 
         return_angle: bool=False
@@ -20,11 +20,11 @@ def get_direction(
     Specify an error to introduce randomized spread.
     Specify an offset to offset the direction.
     """
-    radian = math.radians(angle) if degrees else angle
+    radian = math.radians(angle) if deg else angle
     radian = get_offset(radian, offset) if offset else radian
     radian = get_error(radian, error) if error else radian
     direction = Vector2(math.cos(radian), -math.sin(radian))
-    angle = math.degrees(radian) if degrees else radian 
+    angle = math.degrees(radian) if deg else radian 
     if return_angle:
         return {"angle": angle, "direction": direction}
     return direction
