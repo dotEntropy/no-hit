@@ -7,24 +7,24 @@ PI = math.pi
 TAU = math.tau
     
     
-def get_direction(
+def get_angle_direction(
         angle: float, 
-        deg: bool=False, 
+        degrees: bool=False, 
         error: float=0, 
         offset: float=0, 
         return_angle: bool=False
         ) -> Vector2 | dict[float, Vector2]:
     """
     Returns the normalized vector from a given angle, radian by default.
-    It can also return the raw angle and direction.\n
-    Specify an error to introduce randomized spread.
+    Specify an error to introduce randomized spread.\n
     Specify an offset to offset the direction.
+    It can also return the result angle.
     """
-    radian = math.radians(angle) if deg else angle
+    radian = math.radians(angle) if degrees else angle
     radian = get_offset(radian, offset) if offset else radian
     radian = get_error(radian, error) if error else radian
     direction = Vector2(math.cos(radian), -math.sin(radian))
-    angle = math.degrees(radian) if deg else radian 
+    angle = math.degrees(radian) if degrees else radian 
     if return_angle:
         return {"angle": angle, "direction": direction}
     return direction
@@ -74,7 +74,7 @@ def get_angle(origin_pos: Vector2, end_pos: Vector2, error: float=0, offset: flo
 
     radian = get_offset(radian, offset) if offset else radian
     radian = get_error(radian, error) if error else radian
-    radian = math.degrees(radian) if degrees else radian
+    radian = math.degrees(radian) % 360 if degrees else radian
     return radian
     
 
@@ -106,6 +106,7 @@ def lerp(a: float, b: float, t: float) -> float:
 
 
 def invlerp(a: float, b: float, v: float) -> float:
+    if b == v: return 1.0
     result = (v - a) / (b - a)
     return result
 
@@ -115,11 +116,3 @@ def remap(a1: float, b1: float, v: float, a2: float, b2: float, clamp: bool=True
     lerp_val = max(min(lerp_val, 1), 0) if clamp else lerp_val
     result = lerp(a2, b2, lerp_val)
     return result
-
-
-def clamp_value(v: float, _min: float, _max: float) -> float | int:
-    return max(min(v, _max), _min)
-
-
-def invert_vector2(vector: Vector2) -> Vector2:
-    return Vector2(vector.x * -1, vector.y * -1)

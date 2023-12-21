@@ -4,19 +4,21 @@ from typing import Callable
 
 class Timer:
     def __init__(
-            self, 
-            time_ms: int, 
-            func: Callable, 
-            loops: int=-1, 
-            call_on_start: bool=True
-            ) -> None:
+        self, 
+        time_ms: int, 
+        funcs: Callable | list[Callable], 
+        loops: int=-1, 
+        call_on_start: bool=True,
+        **kwargs
+        ) -> None:
         """
         Specified function is called every specified milliseconds.\n
         Loops to infinity by default. Specify the amount of loops if needed.\n
         Set param call_on_0 to False for function to not be called upon start.
         """
         self.time_ms = time_ms
-        self.func = func
+        self.funcs = funcs
+        self.kwargs = kwargs
         self.loops_left = loops
         self.start_time = 0
         self.is_active = False
@@ -28,10 +30,8 @@ class Timer:
         self.start_time = get_ticks()
         
         if not self.call_on_start: return
-        if self.is_infinite():
-            self.func()
-            return
-        self.func()
+        self._handle_function_calls()
+        if self.is_infinite(): return
         self.loops_left -= 1
 
     def stop(self) -> None:
@@ -67,6 +67,20 @@ class Timer:
         if not self.loops_left: return
         if self.paused: self.start_time = get_ticks()
         if get_ticks() - self.start_time < self.time_ms: return
+        self._handle_function_calls()
         self.start_time = get_ticks()
-        if callable(self.func): self.func()
         if not self.is_infinite(): self.loops_left -= 1
+    
+    def _handle_function_calls(self) -> None:
+        funcs = self.funcs
+        if type(funcs) is not list:
+            funcs = [funcs]
+        for func in funcs:
+            self._call_function(func)
+    
+    def _call_function(self, func) -> None:
+        if not callable(func): return
+        if self.kwargs:
+            func(**self.kwargs)
+            return
+        func()

@@ -10,7 +10,7 @@ class DebugText:
         self.texts = [] 
         self.total_ticks = 0
     
-    def update_texts(self, texts: list=[], rate_ms: float=1):
+    def update(self, texts: list=[], rate_ms: float=1):
         self.total_ticks = (self.total_ticks + 1) % rate_ms
         if self.total_ticks: return
         if type(texts) is list:

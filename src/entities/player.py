@@ -1,24 +1,20 @@
 import pygame
 from pygame.sprite import Sprite
 from pygame.math import Vector2
-
-from config import *
-from global_vars import Globals
-from assets import assets
-from utils import vectors
-
-from parents.update_image import UpdateImage
+from src.parents.update_image import UpdateImage
+from src.global_vars import GlobalVars
+from src.assets import assets
+from src.utils import vectors
 
 
 class Player(Sprite, UpdateImage):
     def __init__(self) -> None:
         super().__init__()
         self._init_movement_variables()
-        self._init_constants()
-        self._update_image(self.PLAYER_IMAGE)
+        UpdateImage.__init__(self, assets.get_image("player.png"))
     
     def _init_movement_variables(self) -> None:
-        self.pos = Vector2(200, Globals.get_half_h())
+        self.pos = Vector2(200, GlobalVars.client_h // 2)
         self.vel = Vector2()
         self.max_vel = 500
         self.accel = Vector2()
@@ -28,14 +24,12 @@ class Player(Sprite, UpdateImage):
         self.friction = 2000
         self.bounce_power = 500
     
-    def _init_constants(self) -> None:
-        self.PLAYER_IMAGE = assets.get_image("player.png")
-    
     def update(self, dt: float) -> None:
         self.dt = dt
         self._update_accel()
         self._update_vel()
         self._update_pos()
+        self._update_accel()
     
     def update_forces(self, keys: dict) -> None:
         self.force = Vector2()
@@ -80,8 +74,8 @@ class Player(Sprite, UpdateImage):
         self.rect.centery = round(self.pos.y)
 
     def _check_border_collide(self) -> None:
-        width_border = Globals.client_w
-        height_border = Globals.client_h
+        width_border = GlobalVars.client_w
+        height_border = GlobalVars.client_h
 
         pos_next_frame_left = self.rect.left + self.dt_vel.x
         pos_next_frame_right = self.rect.right + self.dt_vel.x

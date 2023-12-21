@@ -1,13 +1,11 @@
-import pygame
-
-from global_vars import Globals
-from parents.update_image import UpdateImage
+from pygame.surface import Surface
+from src.global_vars import GlobalVars
+from src.parents.update_image import UpdateImage
 
 
 class Bullet(UpdateImage):
-    def __init__(self, IMAGE: pygame.surface) -> None:
-        super().__init__()
-        self._update_image(IMAGE)
+    def __init__(self, IMAGE: Surface) -> None:
+        super().__init__(IMAGE)
 
     def _update_pos(self, dt: float):
         self.pos += self.vel * dt
@@ -15,8 +13,8 @@ class Bullet(UpdateImage):
         self.rect.centery = round(self.pos.y)
 
     def _handle_despawn(self):
-        border_w = Globals.client_w
-        border_h = Globals.client_h
+        border_w = GlobalVars.client_w
+        border_h = GlobalVars.client_h
         offset_w = border_w * 0.2
         offset_h = border_h * 0.2
         kill_conditions = [
