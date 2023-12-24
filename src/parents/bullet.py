@@ -1,11 +1,29 @@
-from pygame.surface import Surface
 from src.global_vars import GlobalVars
-from src.parents.update_image import UpdateImage
+from src.parents.animation import Animation
+from src.entities.player import Player
 
 
-class Bullet(UpdateImage):
-    def __init__(self, IMAGE: Surface) -> None:
-        super().__init__(IMAGE)
+class Bullet(Animation):
+    def __init__(self, asset_id: str) -> None:
+        super().__init__(asset_id)
+        self.is_projectile = True
+        self.player_detect_range = 100
+    
+    def _detect_proximity(self, player: Player) -> None:
+        if not self.is_projectile: 
+            self._handle_collisions(player)
+            return
+        distance = self.pos.distance_to(player.pos)
+        if distance > self.player_detect_range:
+            self._update_frames("bloom-bullet-far")
+            return
+        self._update_frames("bloom-bullet-near")
+        self._handle_collisions(player)
+    
+    def _handle_collisions(self, player: Player) -> None:
+        if not self._collide_mask(self, player): return
+        player.hp -= 1
+        self.kill()
 
     def _update_pos(self, dt: float):
         self.pos += self.vel * dt

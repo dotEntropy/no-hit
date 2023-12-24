@@ -1,6 +1,5 @@
 import pygame
-from pygame.sprite import Group, GroupSingle, Sprite
-from pygame.event import Event
+from pygame.sprite import Group, GroupSingle
 from pygame.math import Vector2
 import math
 import numpy as np
@@ -10,7 +9,7 @@ from src.global_vars import GlobalVars
 from src.assets import assets
 from src.utils.clock import Timer
 from src.entities.player import Player
-from src.entities.bloom import SpiralBullet
+from src.entities.bloom import BloomPattern
 
 
 class GameState(State):
@@ -55,9 +54,8 @@ class GameState(State):
         self._update_groups()
         self._update_timers()
 
-
     def _update_groups(self) -> None:
-        self.bullet_group.update(self.dt)
+        self.bullet_group.update(self.dt, self.player)
         self.player_group.update(self.dt)
 
     def _update_timers(self) -> None:
@@ -96,7 +94,7 @@ class GameState(State):
     def _create_bloom(self) -> None:
         for i in np.arange(0, 1, 0.1):
             angle_rad = math.tau*i + self.spiral_shift
-            spiral_bullet = SpiralBullet(angle_rad)
+            spiral_bullet = BloomPattern(angle_rad)
             spiral_bullet.add(self.bullet_group)
         random_shift = random.random() * 0.5
         self.spiral_shift = (self.spiral_shift - random_shift) % math.tau
@@ -133,4 +131,3 @@ class GameState(State):
     def _toggle_pause_current_stage(self) -> None:
         if self.current_stage is None: return
         self.current_stage.toggle_pause()
-    

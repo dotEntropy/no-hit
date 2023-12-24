@@ -2,22 +2,31 @@ import pygame
 import time
 from src.states.states import States
 from src.global_vars import GlobalVars
-from src.assets import assets
+from src.assets.assets import AssetClass
 from src.utils.debug_text import DebugText
 
 
 class Main:
     def __init__(self) -> None:
-        pygame.init()
-        pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        pygame.display.set_caption("no-hit")
-        pygame.display.set_icon(assets.get_image("icon.png"))
-        display_info = pygame.display.Info()
-        GlobalVars.client_w = display_info.current_w
-        GlobalVars.client_h = display_info.current_h
+        self._init_display()
+        self._init_textures()
         self.clock = pygame.time.Clock()
         self.states = States()
         self.debug = DebugText()
+    
+    def _init_display(self) -> None:
+        pygame.init()
+        pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        pygame.display.set_caption("no-hit")
+        display_info = pygame.display.Info()
+        GlobalVars.client_w = display_info.current_w
+        GlobalVars.client_h = display_info.current_h
+        GlobalVars._update_sprite_scale()
+    
+    def _init_textures(self) -> None:
+        asset = AssetClass()
+        asset.load_assets()
+        pygame.display.set_icon(GlobalVars.get_asset("icon"))
 
     def run(self) -> None:
         pre_time = time.time()
@@ -31,8 +40,8 @@ class Main:
     
     def _run_debug(self) -> None:
         self.debug.update([
-            f"fps: {round(self.clock.get_fps())}"
-            ], rate_ms=50)
+            f"fps: {round(self.clock.get_fps())}",
+            ], rate_ms=100)
         self.debug.draw()
 
 

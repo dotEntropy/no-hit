@@ -1,17 +1,16 @@
-import pygame
+import pygame, sys
 from pygame.sprite import Sprite
 from pygame.math import Vector2
-from src.parents.update_image import UpdateImage
+from src.parents.animation import Animation
 from src.global_vars import GlobalVars
-from src.assets import assets
-from src.utils import vectors
 
 
-class Player(Sprite, UpdateImage):
+class Player(Sprite, Animation):
     def __init__(self) -> None:
         super().__init__()
         self._init_movement_variables()
-        UpdateImage.__init__(self, assets.get_image("player.png"))
+        self.hp = 1
+        Animation.__init__(self, "player", fps=4)
     
     def _init_movement_variables(self) -> None:
         self.pos = Vector2(200, GlobalVars.client_h // 2)

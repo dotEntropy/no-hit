@@ -2,19 +2,15 @@ from pygame.sprite import Sprite
 from pygame.math import Vector2
 import math
 from src.global_vars import GlobalVars
-from src.assets import assets
 from src.parents.bullet import Bullet
+from src.entities.player import Player
 
 
-class SpiralBullet(Sprite, Bullet):
+class BloomPattern(Sprite, Bullet):
     def __init__(self, angle_rad: float) -> None:
         super().__init__()
-        self._init_type()
         self._init_movement_variables(angle_rad)
-        Bullet.__init__(self, assets.get_image("spiral-bullet.png"))
-    
-    def _init_type(self) -> None:
-        self.is_projectile = True
+        Bullet.__init__(self, "bloom-bullet-far")
     
     def _init_movement_variables(self, angle_rad) -> None:
         init_pos_x = GlobalVars.client_w // 2
@@ -25,10 +21,11 @@ class SpiralBullet(Sprite, Bullet):
         self.radius = 0
         self.angle_rad = angle_rad
 
-    def update(self, dt: float) -> None:
+    def update(self, dt: float, player: Player) -> None:
         self._handle_despawn()
         self._update_vel(dt)
         self._update_pos(dt)
+        self._detect_proximity(player)
     
     def _update_vel(self, dt: float) -> None:
         radius = self.radius
