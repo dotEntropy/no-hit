@@ -13,7 +13,7 @@ class Main:
         self.clock = pygame.time.Clock()
         self.states = States()
         self.debug = DebugText()
-    
+        
     def _init_display(self) -> None:
         pygame.init()
         pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -40,8 +40,10 @@ class Main:
     
     def _run_debug(self) -> None:
         self.debug.update([
+            f"{GlobalVars.client_w}x{GlobalVars.client_h}",
             f"fps: {round(self.clock.get_fps())}",
-            ], rate_ms=100)
+            f"attempts: {GlobalVars.attempts}",
+            ], rate_ms=25)
         self.debug.draw()
 
 

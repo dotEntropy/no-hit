@@ -7,26 +7,20 @@ class Bullet(Animation):
     def __init__(self, asset_id: str) -> None:
         super().__init__(asset_id)
         self.is_projectile = True
+        self.is_opaque = True
         self.player_detect_range = 100
     
-    def _detect_proximity(self, player: Player) -> None:
-        if not self.is_projectile: 
-            self._handle_collisions(player)
-            return
-        distance = self.pos.distance_to(player.pos)
-        if distance > self.player_detect_range:
-            self._update_frames("bloom-bullet-far")
-            return
-        self._update_frames("bloom-bullet-near")
-        self._handle_collisions(player)
-    
     def _handle_collisions(self, player: Player) -> None:
+        if not self.is_opaque: return
         if not self._collide_mask(self, player): return
-        player.hp -= 1
+        GlobalVars.game_over = True
         self.kill()
 
-    def _update_pos(self, dt: float):
-        self.pos += self.vel * dt
+    def _update_pos(self):
+        self.dt_vel = self.vel * self.dt
+        self.dt_vel.x *= GlobalVars.sprite_scale.x
+        self.dt_vel.y *= GlobalVars.sprite_scale.y
+        self.pos += self.dt_vel
         self.rect.centerx = round(self.pos.x)
         self.rect.centery = round(self.pos.y)
 

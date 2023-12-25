@@ -13,7 +13,7 @@ class Player(Sprite, Animation):
         Animation.__init__(self, "player", fps=4)
     
     def _init_movement_variables(self) -> None:
-        self.pos = Vector2(200, GlobalVars.client_h // 2)
+        self.pos = Vector2(GlobalVars.client_w / 8, GlobalVars.client_h / 2)
         self.vel = Vector2()
         self.max_vel = 500
         self.accel = Vector2()
@@ -30,7 +30,7 @@ class Player(Sprite, Animation):
         self._update_pos()
         self._update_accel()
     
-    def update_forces(self, keys: dict) -> None:
+    def handle_controls(self, keys: dict) -> None:
         self.force = Vector2()
         if keys[pygame.K_a]:
             self.force.x -= self.force_applied
@@ -66,8 +66,11 @@ class Player(Sprite, Animation):
             self.vel.y = min(self.vel.y + dt_friction, 0)
 
     def _update_pos(self) -> None:
+        if not self.vel: return
         self.dt_vel = self.vel * self.dt
         self._check_border_collide()
+        self.dt_vel.x = self.dt_vel.x * GlobalVars.sprite_scale.x
+        self.dt_vel.y = self.dt_vel.y * GlobalVars.sprite_scale.y
         self.pos += self.dt_vel
         self.rect.centerx = round(self.pos.x)
         self.rect.centery = round(self.pos.y)

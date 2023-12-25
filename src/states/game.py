@@ -6,7 +6,6 @@ import numpy as np
 import random
 from src.parents.state import State
 from src.global_vars import GlobalVars
-from src.assets import assets
 from src.utils.clock import Timer
 from src.entities.player import Player
 from src.entities.bloom import BloomPattern
@@ -18,11 +17,13 @@ class GameState(State):
         self._init_config()
         self._init_groups()
         self._init_sprites()
+        self._init_attack_types()
         self._init_stage_sequence()
     
     # INITIALIZATION
 
     def _init_config(self) -> None:
+        GlobalVars.game_over = False
         self.spiral_shift = 0
 
     def _init_groups(self) -> None:
@@ -33,16 +34,20 @@ class GameState(State):
         self.player = Player()
         self.player_group.add(self.player)
     
-    def _init_stage_sequence(self) -> None:
-        self.bloom = Timer(175, self._create_bloom)
-        self.stage_index = -1
-        self.stages = {
-        "bloom_stage_0": {
-            "type": self.bloom,
-            "time": 30_000
-            },
+    def _init_attack_types(self) -> None:
+        self.attack_types = {
+            "bloom": Timer(175, self._create_bloom_attack)
         }
-        self.current_stage = None
+    
+    def _init_stage_sequence(self) -> None:
+        self.stage_index = 0
+        self.stages = {
+            "bloom-stage-0": {
+                "type": self.attack_types["bloom"],
+                "duration": 30_000
+                },
+            }
+        self.current_attack = None
         self.stage_timer = Timer(0, self._update_stage)
         self.stage_timer.start()
             
@@ -52,15 +57,18 @@ class GameState(State):
         self.dt = dt
         self.mouse_pos = Vector2(pygame.mouse.get_pos())
         self._update_groups()
-        self._update_timers()
+        self._check_game_over()
+        self._update_current_attack()
+        self.stage_timer.update()
 
     def _update_groups(self) -> None:
         self.bullet_group.update(self.dt, self.player)
         self.player_group.update(self.dt)
-
-    def _update_timers(self) -> None:
-        self.bloom.update()
-        self.stage_timer.update()
+    
+    def _check_game_over(self) -> None:
+        if GlobalVars.game_over:
+            self.__init__()
+            GlobalVars.attempts += 1
 
     # DRAW
 
@@ -72,26 +80,20 @@ class GameState(State):
     # EVENTS
     
     def handle_key_tap(self, key: int):
-        if key == pygame.K_f:
-            self._create_bloom()
-        if key == pygame.K_SPACE:
-            self.bullet_group.empty()
-        if key == pygame.K_1:
-            self.stage_timer.toggle_pause()
-            self._toggle_pause_current_stage()
+        pass
     
     def handle_mouse_tap(self, button: int):
         pass
 
     def handle_key_held(self, keys: dict) -> None:
-        self.player.update_forces(keys)
+        self.player.handle_controls(keys)
 
     def handle_mouse_held(self, buttons: tuple) -> None:
         pass
 
-    # BULLET FUNCTIONS
+    # ATTACKS
 
-    def _create_bloom(self) -> None:
+    def _create_bloom_attack(self) -> None:
         for i in np.arange(0, 1, 0.1):
             angle_rad = math.tau*i + self.spiral_shift
             spiral_bullet = BloomPattern(angle_rad)
@@ -99,35 +101,39 @@ class GameState(State):
         random_shift = random.random() * 0.5
         self.spiral_shift = (self.spiral_shift - random_shift) % math.tau
 
-    # STAGE FUNCTIONS
+    # STAGES
 
     def _update_stage(self) -> None:
-        self.stage_index += 1
         # no more stages?
         if self.stage_index > len(self.stages) - 1:
             self.stage_timer.stop()
-            self._stop_current_stage()
+            self._stop_current_attack()
             return
-        self._stop_current_stage()
+        self._stop_current_attack()
         self._start_new_stage()
-        self._start_current_stage()
+        self._start_current_attack()
     
-    def _stop_current_stage(self) -> None:
-        if self.current_stage is None: return
-        self.current_stage.stop()
-
     def _start_new_stage(self) -> None:
         stages = self.stages
-        stage_id = list(stages.keys())[self.stage_index]
-        stage = stages[stage_id]
-        self.current_stage: Timer = stage["type"]
-        self.current_stage_time = stage["time"]
-        self.stage_timer.change_interval(self.current_stage_time)
-
-    def _start_current_stage(self) -> None:
-        if self.current_stage is None: return
-        self.current_stage.start()
+        self.current_stage_id = list(stages.keys())[self.stage_index]
+        self.current_stage = stages[self.current_stage_id]
+        self.current_attack: Timer = self.current_stage["type"]
+        self.current_stage_duration: int = self.current_stage["duration"]
+        self.stage_timer.change_interval(self.current_stage_duration)
+        self.stage_index += 1
     
-    def _toggle_pause_current_stage(self) -> None:
-        if self.current_stage is None: return
-        self.current_stage.toggle_pause()
+    def _update_current_attack(self) -> None:
+        if self.current_attack is None: return
+        self.current_attack.update()
+
+    def _start_current_attack(self) -> None:
+        if self.current_attack is None: return
+        self.current_attack.start()
+
+    def _stop_current_attack(self) -> None:
+        if self.current_attack is None: return
+        self.current_attack.stop()
+    
+    def _toggle_pause_current_attack(self) -> None:
+        if self.current_attack is None: return
+        self.current_attack.toggle_pause()

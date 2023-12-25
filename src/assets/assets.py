@@ -57,7 +57,7 @@ def get_frames(file_name: str) -> list[Surface]:
     matching_files = glob.glob(pattern)
     if not matching_files:
         frame = get_image(f"{file_name}{file_ext}")
-        return [frame]
+        return frame
 
     n_frames = len(matching_files)
     frames = [get_image(f"{file_name}-{i}{file_ext}") for i in range(n_frames)]
@@ -71,6 +71,6 @@ class AssetClass:
             "bloom-bullet-near": get_frames("bloom-bullet-near.png"),
             "bloom-bullet-far": get_frames("bloom-bullet-far.png"),
             "default": get_frames("default.png"),
-            "icon": get_image("icon.png"),
-        }
+            "icon": get_frames("icon.png"),
+            }
         GlobalVars.assets = assets
