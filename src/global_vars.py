@@ -29,8 +29,10 @@ class GlobalVars:
         return Vector2(GlobalVars.client_w, GlobalVars.client_h) // 2
     
     def get_asset(asset_id: str, is_image=True) -> Surface:
-        if is_image: return GlobalVars.assets.get(asset_id, GlobalVars.assets["default"])
-        return GlobalVars.assets.get(asset_id)
+        if is_image: 
+            return GlobalVars.assets.get(asset_id, GlobalVars.assets["default"])
+        else:
+            return GlobalVars.assets.get(asset_id)
 
     def _update_sprite_scale() -> None:
         w_ratio = GlobalVars.client_w / GlobalVars.GAME_W

@@ -1,28 +1,21 @@
 from src.global_vars import GlobalVars
+from src.parents.kinematics import Kinematics
 from src.parents.animation import Animation
 from src.entities.player import Player
 
 
-class Bullet(Animation):
-    def __init__(self, asset_id: str) -> None:
-        super().__init__(asset_id)
+class Bullet(Kinematics, Animation):
+    def __init__(self, asset_id: str, total_frames: int=1) -> None:
+        Kinematics.__init__(self)
+        Animation.__init__(self, asset_id, total_frames=total_frames)
         self.is_projectile = True
         self.is_opaque = True
-        self.player_detect_range = 100
     
     def _handle_collisions(self, player: Player) -> None:
         if not self.is_opaque: return
         if not self._collide_mask(self, player): return
         GlobalVars.game_over = True
         self.kill()
-
-    def _update_pos(self):
-        self.dt_vel = self.vel * self.dt
-        self.dt_vel.x *= GlobalVars.sprite_scale.x
-        self.dt_vel.y *= GlobalVars.sprite_scale.y
-        self.pos += self.dt_vel
-        self.rect.centerx = round(self.pos.x)
-        self.rect.centery = round(self.pos.y)
 
     def _handle_despawn(self):
         border_w = GlobalVars.client_w

@@ -8,7 +8,7 @@ from src.parents.state import State
 from src.global_vars import GlobalVars
 from src.utils.clock import Timer
 from src.entities.player import Player
-from src.entities.bloom import BloomPattern
+from src.entities.spiral import SpiralBullet
 
 
 class GameState(State):
@@ -24,6 +24,7 @@ class GameState(State):
 
     def _init_config(self) -> None:
         GlobalVars.game_over = False
+        self.bloom_shift = 0
         self.spiral_shift = 0
 
     def _init_groups(self) -> None:
@@ -36,13 +37,14 @@ class GameState(State):
     
     def _init_attack_types(self) -> None:
         self.attack_types = {
-            "bloom": Timer(175, self._create_bloom_attack)
+            "bloom": Timer(175, self._create_bloom_attack),
+            "spiral": Timer(300, self._create_spiral_attack)
         }
     
     def _init_stage_sequence(self) -> None:
         self.stage_index = 0
         self.stages = {
-            "bloom-stage-0": {
+            "stage-0": {
                 "type": self.attack_types["bloom"],
                 "duration": 30_000
                 },
@@ -95,11 +97,19 @@ class GameState(State):
 
     def _create_bloom_attack(self) -> None:
         for i in np.arange(0, 1, 0.1):
-            angle_rad = math.tau*i + self.spiral_shift
-            spiral_bullet = BloomPattern(angle_rad)
+            angle_rad = math.tau*i + self.bloom_shift
+            spiral_bullet = SpiralBullet(angle_rad)
             spiral_bullet.add(self.bullet_group)
         random_shift = random.random() * 0.5
-        self.spiral_shift = (self.spiral_shift - random_shift) % math.tau
+        self.bloom_shift = (self.bloom_shift - random_shift) % math.tau
+    
+    def _create_spiral_attack(self) -> None:
+        for i in np.arange(0, 1, 0.05):
+            angle_rad = math.tau*i + self.spiral_shift
+            spiral_bullet = SpiralBullet(angle_rad)
+            spiral_bullet.add(self.bullet_group)
+        self.spiral_shift = (self.spiral_shift - 1) % math.tau
+    
 
     # STAGES
 

@@ -1,34 +1,33 @@
 import pygame, sys
 from pygame.sprite import Sprite
 from pygame.math import Vector2
+from src.parents.kinematics import Kinematics
 from src.parents.animation import Animation
 from src.global_vars import GlobalVars
 
 
-class Player(Sprite, Animation):
+class Player(Sprite, Kinematics, Animation):
     def __init__(self) -> None:
         super().__init__()
-        self._init_movement_variables()
-        self.hp = 1
+        self._init_kinematics()
         Animation.__init__(self, "player", fps=4)
     
-    def _init_movement_variables(self) -> None:
+    def _init_kinematics(self) -> None:
+        Kinematics.__init__(self)
         self.pos = Vector2(GlobalVars.client_w / 8, GlobalVars.client_h / 2)
-        self.vel = Vector2()
         self.max_vel = 500
-        self.accel = Vector2()
-        self.force = Vector2()
         self.mass = Vector2(1, 1)
-        self.force_applied = 5000
-        self.friction = 2000
+        self.force_applied = 4000
+        self.friction = 4000
         self.bounce_power = 500
     
     def update(self, dt: float) -> None:
         self.dt = dt
         self._update_accel()
         self._update_vel()
+        self._check_border_collide()
         self._update_pos()
-        self._update_accel()
+        self._update_vel()
     
     def handle_controls(self, keys: dict) -> None:
         self.force = Vector2()
@@ -48,14 +47,16 @@ class Player(Sprite, Animation):
         self.accel = Vector2(accel_x, accel_y)
     
     def _update_vel(self) -> None:
-        self.dt_accel = self.accel * self.dt
-        self._create_friction()
-        self.vel += self.dt_accel
+        dt_accel = self.accel * self.dt
+        dt_accel *= 0.5
+        self.vel += dt_accel
         if self.vel: self.vel.clamp_magnitude_ip(self.max_vel)
+        self._create_friction()
     
     def _create_friction(self) -> None:
-        if not self.vel: return
+        if self.force: return
         dt_friction = self.friction * self.dt
+        dt_friction *= 0.5
         if self.vel.x > 0:
             self.vel.x = max(self.vel.x - dt_friction, 0)
         if self.vel.x < 0:
@@ -65,17 +66,8 @@ class Player(Sprite, Animation):
         if self.vel.y < 0:
             self.vel.y = min(self.vel.y + dt_friction, 0)
 
-    def _update_pos(self) -> None:
-        if not self.vel: return
-        self.dt_vel = self.vel * self.dt
-        self._check_border_collide()
-        self.dt_vel.x = self.dt_vel.x * GlobalVars.sprite_scale.x
-        self.dt_vel.y = self.dt_vel.y * GlobalVars.sprite_scale.y
-        self.pos += self.dt_vel
-        self.rect.centerx = round(self.pos.x)
-        self.rect.centery = round(self.pos.y)
-
     def _check_border_collide(self) -> None:
+        if not self.vel: return
         width_border = GlobalVars.client_w
         height_border = GlobalVars.client_h
 

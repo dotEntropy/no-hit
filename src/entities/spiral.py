@@ -6,20 +6,20 @@ from src.parents.bullet import Bullet
 from src.entities.player import Player
 
 
-class BloomPattern(Sprite, Bullet):
+class SpiralBullet(Sprite, Bullet):
     def __init__(self, angle_rad: float) -> None:
-        super().__init__()
-        self._init_movement_variables(angle_rad)
+        Sprite.__init__(self)
+        self._init_kinematics(angle_rad)
         Bullet.__init__(self, "bloom-bullet-far")
     
-    def _init_movement_variables(self, angle_rad) -> None:
+    def _init_kinematics(self, angle_rad) -> None:
         init_pos_x = GlobalVars.client_w // 2
         init_pos_y = GlobalVars.client_h // 2
         self.pos = Vector2(init_pos_x, init_pos_y)
-        self.vel = Vector2()
         self.speed = 500
         self.radius = 0
         self.angle_rad = angle_rad
+        self.player_detect_range = 100 * GlobalVars.sprite_scale.x
 
     def update(self, dt: float, player: Player) -> None:
         self.dt = dt
